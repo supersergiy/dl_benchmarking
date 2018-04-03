@@ -72,7 +72,7 @@ def get_node_by_name(nodes, name):
       return node
 
 class TF(object):
-    def __init__(self, gpu=True, shape=(1,3,128,128,128), threads=44, optimize=False, activation="relu", batchnorm=False):
+    def __init__(self, gpu=True, shape=(1,3,128,128,128), symmetric=False, threads=44, optimize=False, activation="relu", batchnorm=False):
         """docstring for Tensorflow."""
         super(TF, self).__init__()
 
@@ -94,7 +94,8 @@ class TF(object):
             #self.outputs = self.simple_conv(images)
             self.outputs = Unet(batchnorm=batchnorm,
                                 data_format=self.data_format,
-                                activation=activation).forward(images)
+                                activation=activation,
+                                symmetric=symmetric).forward(images)
             self.outputs = tf.identity(self.outputs, name="output")
 
         if optimize:
