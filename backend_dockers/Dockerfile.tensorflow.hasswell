@@ -35,13 +35,17 @@ ENV CI_BUILD_PYTHON=python \
 RUN ./configure
        
 
+                #--copt="-mfma" \
 ARG WHL_DIR=/whl
 RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
     bazel build --config=mkl \
                 --config="opt" \
-                --copt="-march=broadwell" \
+                --copt="-march=native" \
                 --copt="-O3" \
+                --copt="-mavx2" \
+                --copt="-mfma" \
+		--cxxopt="-D_GLIBCXX_USE_CXX11_ABI=0" \
                  //tensorflow/tools/pip_package:build_pip_package && \
                 mkdir ${WHL_DIR} && \
                 bazel-bin/tensorflow/tools/pip_package/build_pip_package ${WHL_DIR}

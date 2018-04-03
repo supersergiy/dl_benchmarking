@@ -1,0 +1,18 @@
+from tensorflow/tensorflow:1.7.0-gpu
+
+RUN apt-get update 
+#apt-get install -y git python-pip 
+RUN apt-get install -y libboost-all-dev python-tk vim
+RUN pip install protobuf 
+RUN apt-get install libprotobuf-dev protobuf-compiler -y
+
+WORKDIR /opt
+
+RUN apt-get install screen -y
+
+ADD ./tflow/requirements.txt /opt
+RUN pip install -r requirements.txt 
+
+ADD ./tflow/TF.py /opt
+ADD ./tflow/Unet3D.py /opt
+ADD ./tflow/client.py /opt
