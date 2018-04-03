@@ -10,8 +10,9 @@ WORKDIR /opt
 
 RUN apt-get install screen -y
 
+ADD ./tflow/requirements.txt /opt
+RUN pip install -r requirements.txt 
+
 ADD ./tflow/TF.py /opt
 ADD ./tflow/Unet3D.py /opt
-ADD ./tflow/requirements.txt /opt
-
-RUN pip install -r requirements.txt 
+ADD ./tflow/client.py /opt
