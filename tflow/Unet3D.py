@@ -9,10 +9,10 @@ class Unet(object):
                        batchnorm = True,
                        upsample = True,
                        data_format = 'channels_first',
-                       kernel_shape =  [[3,8],
-                                        [8,16],
-                                        [16,32],
-                                        [32,64]]):
+                       kernel_shape =  [[3,64],
+                                        [64,128],
+                                        [128,256],
+                                        [256,512]]):
         super(Unet, self).__init__()
         self.merge = merge
         self.kshp = kernel_shape
@@ -20,7 +20,7 @@ class Unet(object):
         self.factor = 3 if merge else 1
         self.fused = True
         self.data_format = data_format # 'channels_first'
-        self.batchnorm = True
+        self.batchnorm = batchnorm
         self.activation = tf.nn.relu if activation=="Relu" else tf.nn.elu
         self.padding = 'SAME' if symmetric else 'VALID'
         self.kernel_size = 3
