@@ -79,7 +79,8 @@ class TF(object):
 
         device = "/GPU:0" if gpu else "/cpu:0"
         config = tf.ConfigProto()
-        data_format='channels_first'
+        self.data_format='channels_first'
+        self.activation = tf.nn.relu if activation=="Relu" else tf.nn.elu
 
         if not gpu:
             data_format='channels_last'
@@ -90,7 +91,7 @@ class TF(object):
         # Creates a graph.
         with tf.device(device):
             images = tf.constant(np.random.rand(*shape), dtype=tf.float32)
-            self.outputs = self.simple_conv(images, data_format=data_format)
+            self.outputs = self.simple_conv(images)
             #self.outputs = Unet(data_format=data_format, activation=activation).forward(images)
             self.outputs = tf.identity(self.outputs, name="output")
 
@@ -100,7 +101,6 @@ class TF(object):
         # Creates a session with log_device_placement set to True.
         self.sess = tf.Session(config=config)
         self.sess.run(tf.global_variables_initializer())
-        self.activation = tf.nn.relu if activation=="Relu" else tf.nn.elu
         
     def simple_conv(self, inputs, n=640, filters=1, kernel_size=1, strides=1, batchnorm=True):
         for i in range(n):
