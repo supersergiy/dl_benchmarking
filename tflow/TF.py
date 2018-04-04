@@ -72,10 +72,11 @@ def get_node_by_name(nodes, name):
       return node
 
 class TF(object):
-    def __init__(self, gpu=True, shape=(1,3,128,128,128), merge=True, symmetric=False, threads=44, optimize=False, activation="relu", batchnorm=False):
+    def __init__(self, gpu=False, shape=(1,3,128,128,128),
+                 merge=False, symmetric=False, residual=False,
+                 threads=44, optimize=False, activation="relu", batchnorm=False):
         """docstring for Tensorflow."""
         super(TF, self).__init__()
-
 
         device = "/GPU:0" if gpu else "/cpu:0"
         config = tf.ConfigProto()
@@ -96,7 +97,8 @@ class TF(object):
                                 batchnorm=batchnorm,
                                 data_format=self.data_format,
                                 activation=activation,
-                                symmetric=symmetric).forward(images)
+                                symmetric=symmetric,
+                                residual=residual).forward(images)
             self.outputs = tf.identity(self.outputs, name="output")
 
         if optimize:
