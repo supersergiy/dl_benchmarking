@@ -11,7 +11,7 @@ import os
 from tensorflow.python.tools import freeze_graph
 
 class TF(object):
-    def __init__(self, gpu=True, shape=(1,3,128,128,128),
+    def __init__(self, gpu=False, shape=(1,3,128,128,128),
                  merge=False, symmetric=True, residual=True,
                  threads=44, optimize=False, activation="elu", batchnorm=True):
         """docstring for Tensorflow."""
