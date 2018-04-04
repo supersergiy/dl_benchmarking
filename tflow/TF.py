@@ -10,6 +10,67 @@ from Unet3D import Unet
 import os
 from tensorflow.python.tools import freeze_graph
 
+class TF(object):
+    def __init__(self, gpu=True, shape=(1,3,128,128,128),
+                 merge=False, symmetric=True, residual=True,
+                 threads=44, optimize=False, activation="elu", batchnorm=True):
+        """docstring for Tensorflow."""
+        super(TF, self).__init__()
+
+        device = "/GPU:0" if gpu else "/cpu:0"
+        config = tf.ConfigProto()
+        self.data_format='channels_first'
+        self.activation = tf.nn.relu if activation=="relu" else tf.nn.elu
+
+        if not gpu:
+            self.data_format='channels_last'
+            shape = [shape[0], shape[2], shape[3], shape[4], shape[1]]
+            config.intra_op_parallelism_threads = threads
+            config.inter_op_parallelism_threads = threads
+        # Original - Merge=True,  symmetric = False, residual = False,
+        # Symmetric- Merge=False, symmetric = True, residual = False,
+        # Residual - Merge=False, symmetric = True, residual = True,
+
+        # Creates a graph.
+        with tf.device(device):
+            images = tf.constant(np.random.rand(*shape), dtype=tf.float32)
+            #self.outputs = self.simple_conv(images)
+            self.outputs = Unet(merge=merge,
+                                batchnorm=batchnorm,
+                                data_format=self.data_format,
+                                activation=activation,
+                                symmetric=symmetric,
+                                residual=residual).forward(images)
+            self.outputs = tf.identity(self.outputs, name="output")
+
+        if optimize:
+            tf_graph = freeze(images, self.outputs)
+
+        # Creates a session with log_device_placement set to True.
+        self.sess = tf.Session(config=config)
+        self.sess.run(tf.global_variables_initializer())
+
+    def simple_conv(self, inputs, n=640, filters=1, kernel_size=1, strides=1, batchnorm=True):
+        for i in range(n):
+            inputs = tf.layers.conv3d(
+                  inputs=inputs, filters=filters, kernel_size=kernel_size, strides=strides,
+                  padding=('SAME' if strides == 1 else 'VALID'), use_bias=True,
+                  kernel_initializer=tf.variance_scaling_initializer(),
+                  data_format=self.data_format)
+
+            if batchnorm:
+                inputs = tf.layers.batch_normalization(
+                    inputs, fused=False)
+            inputs =  self.activation(inputs)
+        return inputs
+
+    def process(self):
+        t1 = time.time()
+        self.sess.run("output")
+        t2 = time.time()
+        return t2-t1
+
+
 def load_graph(frozen_graph_filename):
     # We load the protobuf file from the disk and parse it to retrieve the
     # unserialized graph_def
@@ -70,63 +131,6 @@ def get_node_by_name(nodes, name):
   for node in nodes:
     if node.name == 'prefix/'+name:
       return node
-
-class TF(object):
-    def __init__(self, gpu=False, shape=(1,3,128,128,128),
-                 merge=False, symmetric=False, residual=False,
-                 threads=44, optimize=False, activation="relu", batchnorm=False):
-        """docstring for Tensorflow."""
-        super(TF, self).__init__()
-
-        device = "/GPU:0" if gpu else "/cpu:0"
-        config = tf.ConfigProto()
-        self.data_format='channels_first'
-        self.activation = tf.nn.relu if activation=="relu" else tf.nn.elu
-
-        if not gpu:
-            self.data_format='channels_last'
-            shape = [shape[0], shape[2], shape[3], shape[4], shape[1]]
-            config.intra_op_parallelism_threads = threads
-            config.inter_op_parallelism_threads = threads
-
-        # Creates a graph.
-        with tf.device(device):
-            images = tf.constant(np.random.rand(*shape), dtype=tf.float32)
-            #self.outputs = self.simple_conv(images)
-            self.outputs = Unet(merge=merge,
-                                batchnorm=batchnorm,
-                                data_format=self.data_format,
-                                activation=activation,
-                                symmetric=symmetric,
-                                residual=residual).forward(images)
-            self.outputs = tf.identity(self.outputs, name="output")
-
-        if optimize:
-            tf_graph = freeze(images, self.outputs)
-
-        # Creates a session with log_device_placement set to True.
-        self.sess = tf.Session(config=config)
-        self.sess.run(tf.global_variables_initializer())
-
-    def simple_conv(self, inputs, n=640, filters=1, kernel_size=1, strides=1, batchnorm=True):
-        for i in range(n):
-            inputs = tf.layers.conv3d(
-                  inputs=inputs, filters=filters, kernel_size=kernel_size, strides=strides,
-                  padding=('SAME' if strides == 1 else 'VALID'), use_bias=True,
-                  kernel_initializer=tf.variance_scaling_initializer(),
-                  data_format=self.data_format)
-
-            if batchnorm:
-                inputs = tf.layers.batch_normalization(
-                    inputs, fused=False)
-            inputs =  self.activation(inputs)
-        return inputs
-
-    def process(self):
-        t1 = time.time()
-        self.sess.run("output")
-        t2 = time.time()
-        return t2-t1
 
 
 if __name__ == "__main__":
