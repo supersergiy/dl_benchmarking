@@ -1,4 +1,4 @@
-from tensorflow/tensorflow:1.7.0-gpu
+from seunglab/tensorflow:skylake
 
 RUN apt-get update 
 #apt-get install -y git python-pip 
