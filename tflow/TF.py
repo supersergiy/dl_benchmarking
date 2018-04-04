@@ -13,7 +13,7 @@ from tensorflow.python.tools import freeze_graph
 class TF(object):
     def __init__(self, gpu=False, shape=(1,3,128,128,128),
                  merge=False, symmetric=True, residual=True,
-                 threads=44, optimize=False, activation="elu", batchnorm=True):
+                 threads=44, optimize=False, activation="relu", batchnorm=True):
         """docstring for Tensorflow."""
         super(TF, self).__init__()
 
@@ -27,9 +27,6 @@ class TF(object):
             shape = [shape[0], shape[2], shape[3], shape[4], shape[1]]
             config.intra_op_parallelism_threads = threads
             config.inter_op_parallelism_threads = threads
-        # Original - Merge=True,  symmetric = False, residual = False,
-        # Symmetric- Merge=False, symmetric = True, residual = False,
-        # Residual - Merge=False, symmetric = True, residual = True,
 
         # Creates a graph.
         with tf.device(device):

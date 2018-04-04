@@ -1,20 +1,32 @@
+#!/bin/sh
 mkdir dest
-(python client.py --gpu --box_size 108 | tail -1) >> output.txt; sleep 5
-(python client.py --gpu --box_size 108 --activ elu | tail -1) >> output.txt; sleep 5
-(python client.py --gpu --box_size 108 --batchnorm | tail -1) >> output.txt; sleep 5
-(python client.py --gpu --box_size 108 --batchnorm | tail -1) >> output.txt; sleep 5
+SLP=5
+(python client.py | tail -1) >> output.txt; sleep $SLP
+(python client.py --activ elu | tail -1) >> output.txt; sleep $SLP
+(python client.py --batchnorm | tail -1) >> output.txt; sleep $SLP
+(python client.py --batchnorm --activ elu | tail -1) >> output.txt; sleep $SLP
 
-(python client.py --gpu --box_size 108 --optimize | tail -1) >> output.txt; sleep 5
-(python client.py --gpu --box_size 108 --optimize --activ elu | tail -1) >> output.txt; sleep 5
-(python client.py --gpu --box_size 108 --optimize --batchnorm | tail -1) >> output.txt; sleep 5
-(python client.py --gpu --box_size 108 --optimize --batchnorm --activ elu| tail -1) >> output.txt; sleep 5
+(python client.py --optimize | tail -1) >> output.txt; sleep $SLP
+(python client.py --optimize --activ elu | tail -1) >> output.txt; sleep $SLP
+(python client.py --optimize --batchnorm | tail -1) >> output.txt; sleep $SLP
+(python client.py --optimize --batchnorm --activ elu| tail -1) >> output.txt; sleep $SLP
 
-(python client.py --gpu --sym_unet | tail -1) >> output.txt; sleep 5
-(python client.py --gpu --sym_unet --activ elu | tail -1) >> output.txt; sleep 5
-(python client.py --gpu --sym_unet --batchnorm | tail -1) >> output.txt; sleep 5
-(python client.py --gpu --sym_unet --batchnorm | tail -1) >> output.txt; sleep 5
+(python client.py --model symmetric | tail -1) >> output.txt; sleep $SLP
+(python client.py --model symmetric --activ elu | tail -1) >> output.txt; sleep $SLP
+(python client.py --model symmetric --batchnorm | tail -1) >> output.txt; sleep $SLP
+(python client.py --model symmetric --batchnorm --activ elu | tail -1) >> output.txt; sleep $SLP
 
-(python client.py --gpu --sym_unet --optimize | tail -1) >> output.txt; sleep 5
-(python client.py --gpu --sym_unet --optimize --activ elu | tail -1) >> output.txt; sleep 5
-(python client.py --gpu --sym_unet --optimize --batchnorm | tail -1) >> output.txt; sleep 5
-(python client.py --gpu --sym_unet --optimize --batchnorm --activ elu| tail -1) >> output.txt; sleep 5
+(python client.py --model symmetric --optimize | tail -1) >> output.txt; sleep $SLP
+(python client.py --model symmetric --optimize --activ elu | tail -1) >> output.txt; sleep $SLP
+(python client.py --model symmetric --optimize --batchnorm | tail -1) >> output.txt; sleep $SLP
+(python client.py --model symmetric --optimize --batchnorm --activ elu| tail -1) >> output.txt; sleep $SLP
+
+(python client.py --model residual | tail -1) >> output.txt; sleep $SLP
+(python client.py --model residual --activ elu | tail -1) >> output.txt; sleep $SLP
+(python client.py --model residual --batchnorm | tail -1) >> output.txt; sleep $SLP
+(python client.py --model residual --batchnorm --activ elu §| tail -1) >> output.txt; sleep $SLP
+
+(python client.py --model residual --optimize | tail -1) >> output.txt; sleep $SLP
+(python client.py --model residual --optimize --activ elu | tail -1) >> output.txt; sleep $SLP
+(python client.py --model residual --optimize --batchnorm | tail -1) >> output.txt; sleep $SLP
+(python client.py --model residual --optimize --batchnorm --activ elu| tail -1) >> output.txt; sleep $SLP

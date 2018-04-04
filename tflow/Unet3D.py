@@ -46,7 +46,9 @@ class Unet(object):
         self.residual = residual
 
         self.padding = 'SAME' if symmetric else 'VALID'
-        self.upsample_layer = tf.keras.layers.UpSampling3D(size=(2, 2, 2), data_format= self.data_format)
+
+        factor = (1, 2, 2) if residual else (2, 2, 2)
+        self.upsample_layer = tf.keras.layers.UpSampling3D(size=factor, data_format= self.data_format)
 
     def upconv(self, inputs, filters, stride=2, padding=1,
                 output_padding=1, upsample=False):
@@ -139,7 +141,10 @@ class Unet(object):
                 x = self.block(x, filters=[int(self.kshp[i][1]/2), self.kshp[i][1]])
             layers.append(x)
             print("~Max_pooling3D")
-            x = tf.layers.max_pooling3d(x, pool_size=2, strides=2, padding='SAME', data_format=self.data_format)
+            if self.residual:
+                x = tf.layers.max_pooling3d(x, pool_size=(1,2,2), strides=(1,2,2), padding='SAME', data_format=self.data_format)
+            else:
+                x = tf.layers.max_pooling3d(x, pool_size=2, strides=2, padding='SAME', data_format=self.data_format)
 
         if self.residual:
             x = self.res_block(x, filters=[self.kshp[-1][1], self.kshp[-1][1]])
@@ -151,17 +156,26 @@ class Unet(object):
             j = self.levels-i
             x = self.upconv(x, filters=min(self.factor,2)*self.kshp[j][0])
             x_enc = layers[(self.levels-1)-(i-1)]
+            print(x.shape, x_enc.shape)
+            #exit()
 
-            start = int((x_enc.get_shape().as_list()[2]-x.get_shape().as_list()[2])/2)
+
+
             if self.data_format=="channels_first":
-                x_enc = x_enc[:,:,start:start+x.get_shape().as_list()[2],
-                                  start:start+x.get_shape().as_list()[2],
-                                  start:start+x.get_shape().as_list()[2]]
+                start = (int((x_enc.get_shape().as_list()[2]-x.get_shape().as_list()[2])/2),
+                         int((x_enc.get_shape().as_list()[3]-x.get_shape().as_list()[3])/2),
+                         int((x_enc.get_shape().as_list()[4]-x.get_shape().as_list()[4])/2))
+                x_enc = x_enc[:,:,start[0]:start[0]+x.get_shape().as_list()[2],
+                                  start[1]:start[1]+x.get_shape().as_list()[3],
+                                  start[2]:start[2]+x.get_shape().as_list()[4]]
 
             else:
-                x_enc = x_enc[:,  start:start+x.get_shape().as_list()[2],
-                                  start:start+x.get_shape().as_list()[2],
-                                  start:start+x.get_shape().as_list()[2], :]
+                start = (int((x_enc.get_shape().as_list()[1]-x.get_shape().as_list()[1])/2),
+                         int((x_enc.get_shape().as_list()[2]-x.get_shape().as_list()[2])/2),
+                         int((x_enc.get_shape().as_list()[3]-x.get_shape().as_list()[3])/2))
+                x_enc = x_enc[:,  start[0]:start[0]+x.get_shape().as_list()[1],
+                                  start[1]:start[1]+x.get_shape().as_list()[2],
+                                  start[2]:start[2]+x.get_shape().as_list()[3], :]
 
             if self.merge:
                 print("Merge")
@@ -191,6 +205,9 @@ class Unet(object):
                   padding=self.padding, use_bias=True,
                   kernel_initializer=tf.variance_scaling_initializer(),
                   data_format=self.data_format)
+
+            print("Sigmoid")
+            x = tf.sigmoid(x)
         else:
             print('Conv3D', self.kshp[0][0])
             x = tf.layers.conv3d(
