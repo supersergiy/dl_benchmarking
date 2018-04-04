@@ -1,4 +1,3 @@
 #sudo apt-get install protobuf-compiler libprotoc-dev for onnx
-onnx
-onnx-tf
-tensorflow-gpu
+#onnx
+#onnx-tf
