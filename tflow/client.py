@@ -10,6 +10,7 @@ parser.add_option("--warmup", dest="num_warmup", default=10, type="int")
 parser.add_option("--iter", dest="num_iter", default=50, type="int")
 parser.add_option("--activ", dest="activ", default="relu")
 parser.add_option("--optimize", action="store_true", dest="optimize", default=False)
+parser.add_option("--merge", action="store_true", dest="merge", default=False)
 
 if __name__ == "__main__":
 	(options, args) = parser.parse_args()
@@ -17,7 +18,8 @@ if __name__ == "__main__":
 	shp = (1,3,int(box_size), int(box_size), int(box_size))
 	warmups    = options.num_warmup
 	iterations = options.num_iter
-	net =  TF(batchnorm=options.batchnorm,
+	net =  TF(merge=options.merge,
+			  batchnorm=options.batchnorm,
 			  shape=shp,
 			  activation=options.activ,
 			  gpu=options.gpu,
