@@ -1,4 +1,4 @@
-from seunglab/tensorflow:hasswell
+from seunglab/tensorflow:haswell
 
 RUN apt-get update 
 RUN apt-get install -y git python-pip 
