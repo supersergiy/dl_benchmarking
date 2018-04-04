@@ -21,7 +21,7 @@ ENV CI_BUILD_PYTHON=python \
        LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
        PYTHON_BIN_PATH=/usr/bin/python3 \
        PYTHON_LIB_PATH=/usr/lib/python3/dist-packages \
-       CC_OPT_FLAGS='-march=native' \
+       CC_OPT_FLAGS='-march=skylake-avx512' \
        TF_NEED_JEMALLOC=0 \
        TF_NEED_GCP=0 \
        TF_NEED_CUDA=0 \
@@ -33,19 +33,27 @@ ENV CI_BUILD_PYTHON=python \
        TF_NEED_VERBS=0 \
        TF_NEED_MPI=0
 RUN ./configure
-       
 
-                #--copt="-mfma" \
+#install GCC-6
+RUN apt-get install software-properties-common python-software-properties -y
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test && apt-get update
+RUN apt install gcc-6 g++-6 -y
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6 
+
 ARG WHL_DIR=/whl
-RUN ln -s /usr/bin/python3 /usr/bin/python
+#RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
     bazel build --config=mkl \
                 --config="opt" \
-                --copt="-march=native" \
+                --copt="-march=skylake-avx512" \
                 --copt="-O3" \
                 --copt="-mavx2" \
-                --copt="-fma" \
-                --copt="-mavx512" \
+                --copt="-mfma" \
+                --copt="-mavx512f" \
+                --copt="-mavx512vl" \
+                --copt="-mavx512bw" \
+                --copt="-mavx512dq" \
+                --copt="-mavx512cd" \
 		--cxxopt="-D_GLIBCXX_USE_CXX11_ABI=0" \
                  //tensorflow/tools/pip_package:build_pip_package && \
                 mkdir ${WHL_DIR} && \
