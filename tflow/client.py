@@ -11,6 +11,7 @@ parser.add_option("--iter", dest="num_iter", default=30, type="int")
 parser.add_option("--activ", dest="activ", default="relu")
 parser.add_option("--optimize", action="store_true", dest="optimize", default=False)
 parser.add_option("--threads", dest="threads", default=16, type="int")
+parser.add_option("--name", dest="name", default="dest")
 #parser.add_option("--merge", action="store_true", dest="merge", default=False)
 
 parser.add_option("--model", dest="model", default="original") # symmetric, residual
@@ -42,13 +43,15 @@ if __name__ == "__main__":
 			  symmetric=symmetric,
 			  optimize= options.optimize,
 			  residual=residual,
-			  threads=threads)
+			  threads=threads,
+			  name=options.name)
 
 	durations = []
 
 	for i in range(warmups + iterations):
 		t = net.process()
 		print(t)
+		exit()
 		if i > warmups:
 			durations.append(t)
 	average = sum(durations) / len(durations)

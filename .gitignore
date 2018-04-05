@@ -12,6 +12,7 @@ build/
 develop-eggs/
 dist/
 tflow/dest/*
+tflow/opt/*
 tflow/output.txt
 tensorflow/dest/
 downloads/

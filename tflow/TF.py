@@ -13,7 +13,8 @@ from tensorflow.python.tools import freeze_graph
 class TF(object):
     def __init__(self, gpu=False, shape=(1,3,128,128,128),
                  merge=False, symmetric=True, residual=True,
-                 threads=44, optimize=False, activation="relu", batchnorm=True):
+                 threads=44, optimize=False, activation="relu", batchnorm=True,
+                 name="dest"):
         """docstring for Tensorflow."""
         super(TF, self).__init__()
 
@@ -30,28 +31,29 @@ class TF(object):
             config.inter_op_parallelism_threads = threads
 
         # Creates a graph.
-
-        with tf.device(device):
-            images = tf.constant(np.random.rand(*shape), dtype=tf.float32)
-            #self.outputs = self.simple_conv(images)
-            self.outputs = Unet(merge=merge,
-                                batchnorm=batchnorm,
-                                data_format=self.data_format,
-                                activation=activation,
-                                symmetric=symmetric,
-                                residual=residual).forward(images)
-            self.outputs = tf.identity(self.outputs, name="output")
+        if not os.path.exists(name+"/deploy.frozen.pb") or name=="dest":
+            with tf.device(device):
+                images = tf.constant(np.random.rand(*shape), dtype=tf.float32)
+                #self.outputs = self.simple_conv(images)
+                self.outputs = Unet(merge=merge,
+                                    batchnorm=batchnorm,
+                                    data_format=self.data_format,
+                                    activation=activation,
+                                    symmetric=symmetric,
+                                    residual=residual).forward(images)
+                self.outputs = tf.identity(self.outputs, name="output")
 
         if optimize:
-            freeze(images, self.outputs)
+            if not os.path.exists(name+"/deploy.frozen.pb") or name=="dest":
+                freeze(images, self.outputs,name=name)
             tf.reset_default_graph()
 
         # Creates a session with log_device_placement set to True.
         self.sess = tf.Session(config=config)
         if optimize:
-            load_frozen_graph()
-            saver = tf.train.import_meta_graph("dest/model.ckpt.meta", import_scope=None)
-            saver.restore(self.sess, "dest/model.ckpt")
+            load_frozen_graph(name)
+            saver = tf.train.import_meta_graph(name+"/model.ckpt.meta", import_scope=None)
+            saver.restore(self.sess, name+"/model.ckpt")
             self.outputs = "output:0"
         self.sess.run(tf.global_variables_initializer())
         #self.outputs = get_node_by_name(tf_graph, "output")
@@ -92,11 +94,11 @@ def load_graph(frozen_graph_filename):
     return graph
 
 
-def freeze(input_node, output_node, temp_folder=None):
+def freeze(input_node, output_node, temp_folder=None, name="dest"):
     saver = tf.train.Saver()
     global_init = tf.global_variables_initializer()
     if temp_folder==None:
-        temp_folder = os.path.dirname(os.path.realpath(__file__))+'/dest/'
+        temp_folder = os.path.dirname(os.path.realpath(__file__))+"/"+name+"/"
 
     output_name = (output_node.name).split(":")[0]
     input_shape = input_node.get_shape().as_list()
@@ -105,7 +107,7 @@ def freeze(input_node, output_node, temp_folder=None):
 
     with tf.Session() as sess:
         sess.run(global_init)
-        tf.train.write_graph(sess.graph, os.path.dirname(os.path.realpath(__file__)), 'dest/deploy.pbtxt', as_text=True)
+        tf.train.write_graph(sess.graph, temp_folder, 'deploy.pbtxt', as_text=True)
         input = np.random.rand(*input_shape).astype(dtype=np.float32)
         #in_path = temp_folder+'/input'
         #input.tofile(in_path)
@@ -129,18 +131,18 @@ def freeze(input_node, output_node, temp_folder=None):
            '', '', '')
 def load(temp_folder=None):
     if temp_folder==None:
-        temp_folder = os.path.dirname(os.path.realpath(__file__))+'/dest/'
+        temp_folder = os.path.dirname(os.path.realpath(__file__))+'/'+name+'/'
     tf.reset_default_graph()
     #tf_graph = tf.get_default_graph().as_graph_def(add_shapes=True)
-    graph = load_graph(os.path.join(temp_folder, 'deploy.frozen.pb'))
+    graph = load_graph(os.path.join(temp_folder, '/deploy.frozen.pb'))
     #graph = tf.import_graph_def(os.path.join(temp_folder, 'deploy.frozen.pb'))
     #tf_graph = graph.as_graph_def(add_shapes=True)
 
     return tf_graph
 
 
-def load_frozen_graph(temp_folder="dest/"):
-    filename = temp_folder + "deploy.frozen.pb"
+def load_frozen_graph(temp_folder="dest"):
+    filename = temp_folder + "/deploy.frozen.pb"
 
     with tf.gfile.GFile(filename, "rb") as f:
         graph_def = tf.GraphDef()
