@@ -19,8 +19,8 @@ class TF(object):
 
         device = "/GPU:0" if gpu else "/cpu:0"
         config = tf.ConfigProto()
-        self.data_format='channels_last'
-        shape = [shape[0], shape[2], shape[3], shape[4], shape[1]]
+        self.data_format='channels_first'
+        #shape = [shape[0], shape[2], shape[3], shape[4], shape[1]]
         self.activation = tf.nn.relu if activation=="relu" else tf.nn.elu
 
         if not gpu:
