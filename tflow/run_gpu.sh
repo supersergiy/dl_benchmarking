@@ -21,7 +21,7 @@ SLP=5
 (python client.py --gpu --model symmetric --optimize --batchnorm | tail -1) >> output.txt; sleep $SLP
 (python client.py --gpu --model symmetric --optimize --batchnorm --activ elu| tail -1) >> output.txt; sleep $SLP
 
-(python client.py --gpu --model residual | tail -1) >> output.txt; sleep $SLP
+(python client.py --gpu --model residual | tail -1) >> output.txt; sle+ep $SLP
 (python client.py --gpu --model residual --activ elu | tail -1) >> output.txt; sleep $SLP
 (python client.py --gpu --model residual --batchnorm | tail -1) >> output.txt; sleep $SLP
 (python client.py --gpu --model residual --batchnorm --activ elu | tail -1) >> output.txt; sleep $SLP

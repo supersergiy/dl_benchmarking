@@ -19,7 +19,8 @@ class TF(object):
 
         device = "/GPU:0" if gpu else "/cpu:0"
         config = tf.ConfigProto()
-        self.data_format='channels_first'
+        self.data_format='channels_last'
+        shape = [shape[0], shape[2], shape[3], shape[4], shape[1]]
         self.activation = tf.nn.relu if activation=="relu" else tf.nn.elu
 
         if not gpu:
@@ -29,6 +30,7 @@ class TF(object):
             config.inter_op_parallelism_threads = threads
 
         # Creates a graph.
+
         with tf.device(device):
             images = tf.constant(np.random.rand(*shape), dtype=tf.float32)
             #self.outputs = self.simple_conv(images)
@@ -41,11 +43,18 @@ class TF(object):
             self.outputs = tf.identity(self.outputs, name="output")
 
         if optimize:
-            tf_graph = freeze(images, self.outputs)
+            freeze(images, self.outputs)
+            tf.reset_default_graph()
 
         # Creates a session with log_device_placement set to True.
         self.sess = tf.Session(config=config)
+        if optimize:
+            load_frozen_graph()
+            saver = tf.train.import_meta_graph("dest/model.ckpt.meta", import_scope=None)
+            saver.restore(self.sess, "dest/model.ckpt")
+            self.outputs = "output:0"
         self.sess.run(tf.global_variables_initializer())
+        #self.outputs = get_node_by_name(tf_graph, "output")
 
     def simple_conv(self, inputs, n=640, filters=1, kernel_size=1, strides=1, batchnorm=True):
         for i in range(n):
@@ -63,7 +72,7 @@ class TF(object):
 
     def process(self):
         t1 = time.time()
-        self.sess.run("output")
+        self.sess.run(self.outputs)
         t2 = time.time()
         return t2-t1
 
@@ -118,17 +127,54 @@ def freeze(input_node, output_node, temp_folder=None):
            os.path.join(temp_folder, 'deploy.frozen.pb'), # output frozen path graph
            True, # clear devices info from meta-graph
            '', '', '')
-        tf_graph = tf.get_default_graph().as_graph_def(add_shapes=True)
+def load(temp_folder=None):
+    if temp_folder==None:
+        temp_folder = os.path.dirname(os.path.realpath(__file__))+'/dest/'
+    tf.reset_default_graph()
+    #tf_graph = tf.get_default_graph().as_graph_def(add_shapes=True)
     graph = load_graph(os.path.join(temp_folder, 'deploy.frozen.pb'))
-    tf_graph = graph.as_graph_def(add_shapes=True)
+    #graph = tf.import_graph_def(os.path.join(temp_folder, 'deploy.frozen.pb'))
+    #tf_graph = graph.as_graph_def(add_shapes=True)
 
     return tf_graph
 
-def get_node_by_name(nodes, name):
-  for node in nodes:
+
+def load_frozen_graph(temp_folder="dest/"):
+    filename = temp_folder + "deploy.frozen.pb"
+
+    with tf.gfile.GFile(filename, "rb") as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+
+    with tf.Graph().as_default() as graph:
+        #new_input = tf.placeholder(tf.float32, [10], name="new_input")
+
+        tf.import_graph_def(
+            graph_def,
+            # usually, during training you use queues, but at inference time use placeholders
+            # this turns into "input
+            #input_map={"input:0": new_input},
+            return_elements=None,
+            # if input_map is not None, needs a name
+            name="bla",
+            op_dict=None,
+            producer_op_list=None
+        )
+
+    #checkpoint_path = tf.train.latest_checkpoint("./tmp/")
+
+    #with tf.Session(graph=graph) as sess:
+    #    saver = tf.train.import_meta_graph(checkpoint_path + ".meta", import_scope=None)
+    #    saver.restore(sess, checkpoint_path)
+
+    #    output = sess.run("output:0", feed_dict={"input:0": np.arange(10, dtype=np.float32)})
+    #    print "output", output
+
+def get_node_by_name(graph, name):
+  for node in graph.node:
+    print(node.name)
     if node.name == 'prefix/'+name:
       return node
-
 
 if __name__ == "__main__":
     pr = TF()

@@ -14,10 +14,14 @@ ADD ./tflow/requirements.txt /opt
 RUN pip install -r requirements.txt
 #RUN pip install numpy
 
+
 ADD ./tflow/TF.py /opt
 ADD ./tflow/Unet3D.py /opt
 ADD ./tflow/client.py /opt
 ADD ./tflow/run_gpu.sh /opt
-ADD ./tflow/run_original.sh /opt
-ADD ./tflow/run_resnet.sh /opt
-ADD ./tflow/run_symmetric.sh /opt
+RUN ls
+ADD ./tflow/run_cpu.sh /opt
+
+#ADD ./tflow/run_original.sh /opt
+#ADD ./tflow/run_resnet.sh /opt
+#ADD ./tflow/run_symmetric.sh /opt
