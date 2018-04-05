@@ -12,6 +12,7 @@ RUN apt-get install screen -y
 
 ADD ./tflow/requirements.txt /opt
 RUN pip install -r requirements.txt
+#RUN pip install numpy
 
 ADD ./tflow/TF.py /opt
 ADD ./tflow/Unet3D.py /opt

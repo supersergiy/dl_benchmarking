@@ -61,3 +61,4 @@ RUN LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
 RUN pip3 --no-cache-dir install --upgrade ${WHL_DIR}/tensorflow-*.whl && \
     rm -rf /root/.cache
 
+WORKDIR /opt
