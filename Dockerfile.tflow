@@ -16,4 +16,7 @@ RUN pip install -r requirements.txt
 ADD ./tflow/TF.py /opt
 ADD ./tflow/Unet3D.py /opt
 ADD ./tflow/client.py /opt
-ADD ./tflow/run.sh /opt
+ADD ./tflow/run_gpu.sh /opt
+ADD ./tflow/run_original.sh /opt
+ADD ./tflow/run_resnet.sh /opt
+ADD ./tflow/run_symmetric.sh /opt
