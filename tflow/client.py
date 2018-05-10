@@ -36,7 +36,7 @@ if __name__ == "__main__":
 		threads = 16 # 2 cores
 		merge, symmetric, residual, block = False, True, True, False
 	if options.model=="block":
-		shp = (1, options.features, 16, 196, 196)
+		shp = (1, options.features, 64, 64, 64)
 		threads = 16 # 2 cores
 		merge, symmetric, residual, block = True, True, True, True
 
