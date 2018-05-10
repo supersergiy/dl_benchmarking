@@ -11,10 +11,11 @@ import os
 from tensorflow.python.tools import freeze_graph
 
 class TF(object):
-    def __init__(self, gpu=False, shape=(1,3,128,128,128),
+    def __init__(self, gpu=False, threads=44, optimize=False,
                  merge=False, symmetric=True, residual=True,
-                 threads=44, optimize=False, activation="relu", batchnorm=True,
-                 block = False, name="dest"):
+                 activation="relu", batchnorm=True,
+                 block = False, name="dest", dim = 3,
+                 shape=(1,3,128,128,128), kernels=[[3,32], [32,64], [64,128], [128,256]]):
         """docstring for Tensorflow."""
         super(TF, self).__init__()
 
@@ -26,7 +27,7 @@ class TF(object):
 
         if not gpu:
             self.data_format='channels_last'
-            shape = [shape[0], shape[2], shape[3], shape[4], shape[1]]
+            shape = [shape[0], shape[2], shape[3], shape[4], shape[1]] if dim == 3 else [shape[0], shape[2], shape[3], shape[1]]
             config.intra_op_parallelism_threads = threads
             config.inter_op_parallelism_threads = threads
 
@@ -41,7 +42,9 @@ class TF(object):
                                 activation=activation,
                                 symmetric=symmetric,
                                 residual=residual,
-                                block=block).forward(images)
+                                kernels=kernels,
+                                block=block,
+                                dim=dim).forward(images)
             self.outputs = tf.identity(self.outputs, name="output")
 
         if optimize:
