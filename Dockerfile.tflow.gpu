@@ -20,3 +20,4 @@ ADD ./tflow/client.py /opt
 ADD ./tflow/run_gpu.sh /opt
 ADD ./tflow/run_cpu.sh /opt
 ADD ./tflow/run_gpu_block.sh /opt
+ADD ./tflow/run_gpu_2D.sh /opt
