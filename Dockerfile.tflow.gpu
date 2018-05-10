@@ -19,3 +19,4 @@ ADD ./tflow/Unet3D.py /opt
 ADD ./tflow/client.py /opt
 ADD ./tflow/run_gpu.sh /opt
 ADD ./tflow/run_cpu.sh /opt
+ADD ./tflow/run_gpu_block.sh /opt
