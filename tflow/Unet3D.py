@@ -125,7 +125,10 @@ class Unet(object):
 
     def forward(self, x):
         if self.is_block:
-            return self.res_block(x, filters=[int(self.kshp[0][1]), self.kshp[0][1]])
+            print(x.get_shape())
+            sph = int(list(x.get_shape())[1])
+            x = self.res_block(x, filters=[sph, sph])
+            return x
         if self.residual:
             print('Conv3D', self.kshp[0][1])
             x = tf.layers.conv3d(

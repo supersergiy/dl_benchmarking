@@ -24,27 +24,28 @@ if __name__ == "__main__":
 	iterations = options.num_iter
 
 	if options.model=="original":
-		merge, symmetric, residual = True, False, False
+		merge, symmetric, residual, block = True, False, False, False
 		shp = (1, 3, 108, 108, 108)
 		threads = 16 # 2 cores
 	if options.model=="symmetric":
-		merge, symmetric, residual = False, True, False
+		merge, symmetric, residual, block = False, True, False, False
 		shp = (1, 3, 128, 128, 128)
 		threads = 16 # 4 cores
 	if options.model=="residual":
 		shp = (1, 3, 16, 192, 192)
 		threads = 16 # 2 cores
-		merge, symmetric, residual = False, True, True
+		merge, symmetric, residual, block = False, True, True, False
 	if options.model=="block":
-		shp = (1, options.features, 16, 192, 192)
+		shp = (1, options.features, 16, 196, 196)
 		threads = 16 # 2 cores
-		merge, symmetric, residual = True, True, True
+		merge, symmetric, residual, block = True, True, True, True
 
 	net =  TF(merge = merge,
 			  batchnorm=options.batchnorm,
 			  shape=shp,
 			  activation=options.activ,
 			  gpu=options.gpu,
+			  block=block,
 			  symmetric=symmetric,
 			  optimize= options.optimize,
 			  residual=residual,
