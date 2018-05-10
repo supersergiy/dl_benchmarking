@@ -14,7 +14,7 @@ class TF(object):
     def __init__(self, gpu=False, shape=(1,3,128,128,128),
                  merge=False, symmetric=True, residual=True,
                  threads=44, optimize=False, activation="relu", batchnorm=True,
-                 name="dest"):
+                 block = False, name="dest"):
         """docstring for Tensorflow."""
         super(TF, self).__init__()
 
@@ -31,17 +31,18 @@ class TF(object):
             config.inter_op_parallelism_threads = threads
 
         # Creates a graph.
-        if not os.path.exists(name+"/deploy.frozen.pb") or name=="dest":
-            with tf.device(device):
-                images = tf.constant(np.random.rand(*shape), dtype=tf.float32)
-                #self.outputs = self.simple_conv(images)
-                self.outputs = Unet(merge=merge,
-                                    batchnorm=batchnorm,
-                                    data_format=self.data_format,
-                                    activation=activation,
-                                    symmetric=symmetric,
-                                    residual=residual).forward(images)
-                self.outputs = tf.identity(self.outputs, name="output")
+        #if not os.path.exists(name+"/deploy.frozen.pb") or name=="dest":
+        with tf.device(device):
+            images = tf.constant(np.random.rand(*shape), dtype=tf.float32)
+            #self.outputs = self.simple_conv(images)
+            self.outputs = Unet(merge=merge,
+                                batchnorm=batchnorm,
+                                data_format=self.data_format,
+                                activation=activation,
+                                symmetric=symmetric,
+                                residual=residual,
+                                block=block).forward(images)
+            self.outputs = tf.identity(self.outputs, name="output")
 
         if optimize:
             if not os.path.exists(name+"/deploy.frozen.pb") or name=="dest":
@@ -179,7 +180,7 @@ def get_node_by_name(graph, name):
       return node
 
 if __name__ == "__main__":
-    pr = TF()
+    pr = TF(block=True)
     for i in range(10):
         tm = pr.process()
         print(tm)

@@ -2,14 +2,15 @@ import tensorflow as tf
 import numpy as np
 
 class Unet(object):
-    def __init__(self, merge = True, #Otherwise sum
-                       symmetric = False,
+    def __init__(self, merge = False, #Otherwise sum
+                       symmetric = True,
                        activation ="relu",
                        kernel_size = 3,
                        batchnorm = True,
-                       upsample = False,
+                       upsample = True,
                        data_format = 'channels_first',
                        residual = False,
+                       block = False,
                        kernel_shape =  [[3,24],
                                         [32,48],
                                         [48,72],
@@ -24,7 +25,7 @@ class Unet(object):
             upsample = True
 
         elif symmetric:
-            self.kshp = [[3,32], [32,64], [64,128], [128,256]]
+            self.kshp = [[3,96], [32,64], [64,128], [128,256]]
         else:
             self.kshp = [[3,64], [64,128], [128,256], [256,512]]
 
@@ -40,7 +41,7 @@ class Unet(object):
             return x
 
         self.activation = activ
-
+        self.is_block = block
         self.kernel_size = 3
         self.upsample = upsample
         self.residual = residual
@@ -123,6 +124,8 @@ class Unet(object):
         return inputs
 
     def forward(self, x):
+        if self.is_block:
+            return self.res_block(x, filters=[int(self.kshp[0][1]), self.kshp[0][1]])
         if self.residual:
             print('Conv3D', self.kshp[0][1])
             x = tf.layers.conv3d(
@@ -221,12 +224,14 @@ class Unet(object):
 
 #Simple test
 if __name__ == "__main__":
-    unet = Unet()
-    shp = (1,3,128,128,128)
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    unet = Unet(block=True)
+    shp = (1,64,192,192,192)
     inp = np.ones(shp, dtype=np.float32)
     x = tf.placeholder(tf.float32, shape=shp)
     out = unet.forward(x)
-    sess = tf.Session()
+    sess = tf.Session(config=config)
     sess.run(tf.global_variables_initializer())
     output = sess.run(out, feed_dict={x: inp})
     print(output.shape) #expected output (1,3,32,32,32)

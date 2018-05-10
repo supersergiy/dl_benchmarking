@@ -9,3 +9,8 @@ SLP=5
 (python3 client.py --name opt/6 --model symmetric --optimize --activ elu | tail -1) >> output.txt; sleep $SLP
 (python3 client.py --name opt/7 --model symmetric --optimize --batchnorm | tail -1) >> output.txt; sleep $SLP
 (python3 client.py --name opt/8 --model symmetric --optimize --batchnorm --activ elu| tail -1) >> output.txt; sleep $SLP
+
+(python3 client.py --model residual --optimize | tail -1) >> output.txt; sleep $SLP
+(python3 client.py --model residual --optimize --activ elu | tail -1) >> output.txt; sleep $SLP
+(python3 client.py --model residual --optimize --batchnorm | tail -1) >> output.txt; sleep $SLP
+(python3 client.py --model residual --optimize --batchnorm --activ elu| tail -1) >> output.txt; sleep $SLP
