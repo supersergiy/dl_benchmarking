@@ -42,6 +42,7 @@ if __name__ == "__main__":
 		kernels =  [[3,24], [24,32], [32,48], [48,72], [72, 104], [104, 144]]
 		merge, symmetric, residual, block = False, True, True, False
 	if options.model=="block":
+		kernels = [[3,64], [64,128], [128,256], [256,512]]
 		shp = (options.batch_size, options.in_features, 64, 64, 64) if options.dim == 3 else (options.batch_size, options.in_features, 64, 64)
 		threads = 16 # 2 cores
 		merge, symmetric, residual, block = True, True, True, True
