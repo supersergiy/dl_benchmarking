@@ -28,21 +28,21 @@ if __name__ == "__main__":
 	if options.model=="original":
 		merge, symmetric, residual, block = True, False, False, False
 		kernels = [[3,64], [64,128], [128,256], [256,512]]
-		shp = (options.batch_size, 3, 108, 108, 108) if options.dim == 3 else (1, 3, 108, 108)
+		shp = (options.batch_size, 3, 108, 108, 108) if options.dim == 3 else (options.batch_size, 3, 108, 108)
 		threads = 16 # 2 cores
 	if options.model=="symmetric":
 		k = options.features
 		merge, symmetric, residual, block = False, True, False, False
-		shp = (options.batch_size, options.in_features, 128, 128, 128) if options.dim == 3 else (1, options.in_features, 128, 128)
+		shp = (options.batch_size, options.in_features, 128, 128, 128) if options.dim == 3 else (options.batch_size, options.in_features, 128, 128)
 		kernels = [[3,k], [k,2*k], [2*k,4*k], [4*k,8*k]]
 		threads = 16 # 4 cores
 	if options.model=="residual":
-		shp = (options.batch_size, 3, 16, 192, 192)  if options.dim == 3 else (1, 3, 192, 192)
+		shp = (options.batch_size, 3, 16, 192, 192)  if options.dim == 3 else (options.batch_size, 3, 192, 192)
 		threads = 16 # 2 cores
 		kernels =  [[3,24], [24,32], [32,48], [48,72], [72, 104], [104, 144]]
 		merge, symmetric, residual, block = False, True, True, False
 	if options.model=="block":
-		shp = (options.batch_size, options.in_features, 64, 64, 64) if options.dim == 3 else (1, options.in_features, 64, 64)
+		shp = (options.batch_size, options.in_features, 64, 64, 64) if options.dim == 3 else (options.batch_size, options.in_features, 64, 64)
 		threads = 16 # 2 cores
 		merge, symmetric, residual, block = True, True, True, True
 
