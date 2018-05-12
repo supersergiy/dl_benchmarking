@@ -18,6 +18,7 @@ parser.add_option("--model", dest="model", default="original") # symmetric, resi
 parser.add_option("--in_features", dest="in_features", default=3, type="int") # symmetric, residual, block
 parser.add_option("--features", dest="features", default=32, type="int") # symmetric, residual, block
 parser.add_option("--dim", dest="dim", default=3, type="int") # symmetric, residual, block
+parser.add_option("--batch_size", dest="batch_size", default=1, type="int") # symmetric, residual, block
 if __name__ == "__main__":
 	(options, args) = parser.parse_args()
 
@@ -27,21 +28,21 @@ if __name__ == "__main__":
 	if options.model=="original":
 		merge, symmetric, residual, block = True, False, False, False
 		kernels = [[3,64], [64,128], [128,256], [256,512]]
-		shp = (1, 3, 108, 108, 108) if options.dim == 3 else (1, 3, 108, 108)
+		shp = (options.batch_size, 3, 108, 108, 108) if options.dim == 3 else (1, 3, 108, 108)
 		threads = 16 # 2 cores
 	if options.model=="symmetric":
 		k = options.features
 		merge, symmetric, residual, block = False, True, False, False
-		shp = (1, options.in_features, 128, 128, 128) if options.dim == 3 else (1, options.in_features, 128, 128)
+		shp = (options.batch_size, options.in_features, 128, 128, 128) if options.dim == 3 else (1, options.in_features, 128, 128)
 		kernels = [[3,k], [k,2*k], [2*k,4*k], [4*k,8*k]]
 		threads = 16 # 4 cores
 	if options.model=="residual":
-		shp = (1, 3, 16, 192, 192)  if options.dim == 3 else (1, 3, 192, 192)
+		shp = (options.batch_size, 3, 16, 192, 192)  if options.dim == 3 else (1, 3, 192, 192)
 		threads = 16 # 2 cores
 		kernels =  [[3,24], [24,32], [32,48], [48,72], [72, 104], [104, 144]]
 		merge, symmetric, residual, block = False, True, True, False
 	if options.model=="block":
-		shp = (1, options.in_features, 64, 64, 64) if options.dim == 3 else (1, options.in_features, 64, 64)
+		shp = (options.batch_size, options.in_features, 64, 64, 64) if options.dim == 3 else (1, options.in_features, 64, 64)
 		threads = 16 # 2 cores
 		merge, symmetric, residual, block = True, True, True, True
 
@@ -66,5 +67,5 @@ if __name__ == "__main__":
 		print(t)
 		if i > warmups:
 			durations.append(t)
-	average = sum(durations) / len(durations)
+	average = sum(durations) / (len(durations)*options.batch_size)
 	print(average)
