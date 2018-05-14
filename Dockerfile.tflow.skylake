@@ -21,3 +21,10 @@ ADD ./tflow/run_cpu.sh /opt
 ADD ./tflow/run_original.sh /opt
 ADD ./tflow/run_resnet.sh /opt
 ADD ./tflow/run_symmetric.sh /opt
+ADD ./tflow/TF.py /opt
+ADD ./tflow/Unet3D.py /opt
+ADD ./tflow/client.py /opt
+ADD ./tflow/run_gpu.sh /opt
+ADD ./tflow/run_cpu.sh /opt
+ADD ./tflow/run_gpu_block.sh /opt
+ADD ./tflow/run_gpu_2D.sh /opt
