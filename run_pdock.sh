@@ -1,3 +1,3 @@
 #!/bin/bash
 docker pull seunglab/unet_timing:ptorch
-docker run -it --rm --runtime=nvidia  seunglab/unet_timing:ptorch bash
+docker run -it --rm seunglab/unet_timing:ptorch bash
